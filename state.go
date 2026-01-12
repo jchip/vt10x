@@ -18,6 +18,21 @@ const (
 	attrItalic
 	attrBlink
 	attrWrap
+	attrDim
+	attrStrikethrough
+)
+
+// Exported attribute constants for external use
+const (
+	AttrReverse       = attrReverse
+	AttrUnderline     = attrUnderline
+	AttrBold          = attrBold
+	AttrGfx           = attrGfx
+	AttrItalic        = attrItalic
+	AttrBlink         = attrBlink
+	AttrWrap          = attrWrap
+	AttrDim           = attrDim
+	AttrStrikethrough = attrStrikethrough
 )
 
 const (
@@ -611,11 +626,13 @@ func (t *State) setAttr(attr []int) {
 		a := attr[i]
 		switch a {
 		case 0:
-			t.cur.Attr.Mode &^= attrReverse | attrUnderline | attrBold | attrItalic | attrBlink
+			t.cur.Attr.Mode &^= attrReverse | attrUnderline | attrBold | attrItalic | attrBlink | attrDim | attrStrikethrough
 			t.cur.Attr.FG = DefaultFG
 			t.cur.Attr.BG = DefaultBG
 		case 1:
 			t.cur.Attr.Mode |= attrBold
+		case 2:
+			t.cur.Attr.Mode |= attrDim
 		case 3:
 			t.cur.Attr.Mode |= attrItalic
 		case 4:
@@ -624,8 +641,12 @@ func (t *State) setAttr(attr []int) {
 			t.cur.Attr.Mode |= attrBlink
 		case 7:
 			t.cur.Attr.Mode |= attrReverse
-		case 21, 22:
-			t.cur.Attr.Mode &^= attrBold
+		case 9:
+			t.cur.Attr.Mode |= attrStrikethrough
+		case 21:
+			t.cur.Attr.Mode &^= attrBold // doubly underlined (some terminals use this to disable bold)
+		case 22:
+			t.cur.Attr.Mode &^= attrBold | attrDim
 		case 23:
 			t.cur.Attr.Mode &^= attrItalic
 		case 24:
@@ -634,6 +655,8 @@ func (t *State) setAttr(attr []int) {
 			t.cur.Attr.Mode &^= attrBlink
 		case 27:
 			t.cur.Attr.Mode &^= attrReverse
+		case 29:
+			t.cur.Attr.Mode &^= attrStrikethrough
 		case 38:
 			if i+2 < len(attr) && attr[i+1] == 5 {
 				i += 2
